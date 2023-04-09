@@ -82,7 +82,7 @@ function handleNewBook(library){
                       <h1>Tips</h1>
                       <p>The track new book section allows you to create a new book record. Here are some useful tips:</p>
                       <ul>
-                        <li>When tracking a new book, all fields are <strong>compulsory</strong> except highlights.</li>
+                        <li>When tracking a new book, all fields are <strong>compulsory</strong>.</li>
                         <li>Oops, did you write something you didn't mean to? No problem, navigate to the track existing book section to edit.</li>
                         <li>
                           If you would like to add a highlight, we recommend you start the record with the page number followed by a colon

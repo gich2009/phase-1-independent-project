@@ -125,17 +125,29 @@ function handleNewBook(library){
 
 function handleNewBookSubmit(event, library){
   event.preventDefault();
-  
-  const book = constructBook(event.target);
-  id = library.reduce(function (accumulator, book){ if(accumulator < parseInt(book.id)) accumulator = book.id; return accumulator}, 0);
-  book["id"] = `${++id}`;
-  postToServer(book);
-  library.push(book);
-  const content = document.querySelector("#content");
-  content.innerHTML = "";
-  renderCard(book);
+  try{
+    //Validation for the data entered in the form.
+    const idInvalid = isNaN(event.target.id.value) || event.target.id.value === "" || Number.isInteger(event.target.id.value) || parseInt(event.target.id.value) < 0
+    const fieldEmpty = event.target.id.value === "" || event.target.title.value === "" || event.target.author.value || event.target.page_count.value === "" ||
+                       event.target.last_location.value === "" || event.target.bookmarked_page.value === "" || event.target.highlights.value ===""
+    if (idInvalid || fieldEmpty)
+         throw("All fields are required, ensure that the properties entered are valid.");
 
-  event.target.reset();
+    const book = constructBook(event.target);
+    id = library.reduce(function (accumulator, book){ if(accumulator < parseInt(book.id)) accumulator = book.id; return accumulator}, 0);
+    book["id"] = `${++id}`;
+    postToServer(book);
+    library.push(book);
+    const content = document.querySelector("#content");
+    content.innerHTML = "";
+    renderCard(book);
+
+  }catch(error){
+    alert(error);
+
+  }finally {
+    event.target.reset();
+  }
 }
 
 
@@ -200,33 +212,47 @@ function handleExistingBook(library){
 function handleExistingSubmit(event, library){
   event.preventDefault();
   const searchId = `${event.target.id.value}`;
-  let index = 0;
 
-  for (; index < library.length ; ++index){
-    if (library[index]["id"] === searchId){
-      console.log(library[index])
-      library[index] = constructBook(event.target);
-      console.log(library[index])
-      library[index]["id"] = searchId;
-      console.log(library[index]);
-      found = true;
-      break;
+  try{
+    //Validation for the data entered in the form.
+    const idInvalid = isNaN(searchId) || searchId === "" || Number.isInteger(searchId) || parseInt(searchId) < 0
+    const fieldEmpty = event.target.id.value === "" || event.target.title.value === "" || event.target.author.value || event.target.page_count.value === "" ||
+                       event.target.last_location.value === "" || event.target.bookmarked_page.value === "" || event.target.highlights.value ===""
+     if (idInvalid || fieldEmpty)
+         throw("All fields are required, ensure that the properties entered are valid.");
+
+    let index = 0;
+
+    for (; index < library.length ; ++index){
+      if (library[index]["id"] === searchId){
+        console.log(library[index])
+        library[index] = constructBook(event.target);
+        console.log(library[index])
+        library[index]["id"] = searchId;
+        console.log(library[index]);
+        found = true;
+        break;
+      }
     }
+
+
+    //if the record is found, then proceed to process it by patching the server and rendering the updated record.
+    if (index !== library.length){
+      const book = constructBook(event.target);
+      console.log(id);
+      book["id"] = `${searchId}`;
+      document.querySelector("#content").innerHTML = "";
+      renderCard(book);
+
+      patchToServer(book);
+    }
+
+  }catch(error){
+    alert(error);
+
+  }finally{
+    event.target.reset();
   }
-
-  //if the record is found, then proceed to process it by patching the server and rendering the updated record.
-  if (index !== library.length){
-    const book = constructBook(event.target);
-    console.log(id);
-    book["id"] = `${searchId}`;
-    document.querySelector("#content").innerHTML = "";
-    renderCard(book);
-
-    patchToServer(book);
-  }
-
-  event.target.reset();
-
 }
 
 

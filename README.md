@@ -24,7 +24,7 @@ Welcome to Kitabu! This interactive application enables users to effortlessly ma
 
 ## Live Demo
 
-Check out the live demo on GitHub Pages: https://gich2009.github.io/kitabu/
+Check out the live demo on GitHub Pages: https://github.com/gich2009/phase-1-independent-project
 
 ## License
 

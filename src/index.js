@@ -78,11 +78,11 @@ function handleNewBook(library){
 
  info.innerHTML = ` 
                     <article>
-                      <h1>Tracking new book tips</h1>
+                      <h1>Tips</h1>
                       <p>The track new book section allows you to create a new book record. Here are some useful tips:</p>
                       <ul>
-                        <li>For best experience, provide information for all the fields.</li>
-                        <li>Forgot to include information in a field? No problem, navigate to the track existing book section to edit.</li>
+                        <li>When tracking a new book, all fields are <strong>compulsory</strong> except highlights.</li>
+                        <li>Oops, did you write something you didn't mean to? No problem, navigate to the track existing book section to edit.</li>
                         <li>
                           If you would like to add a highlight, we recommend you start the record with the page number followed by a colon
                           e.g. 354: Do or do not, there is no try.
@@ -132,9 +132,7 @@ function handleNewBookSubmit(event, library){
   try{
     //Validation for the data entered in the form.
     const fieldEmpty = event.target.title.value === ""       || event.target.author.value === ""          || event.target.page_count.value === "" ||
-                     event.target.last_location.value === "" || event.target.bookmarked_page.value === "" || event.target.highlights.value ==="";
-
-    console.log(fieldEmpty);
+                     event.target.last_location.value === "" || event.target.bookmarked_page.value === "" ;
 
     if (fieldEmpty)
          throw("All fields are required, ensure that the properties entered are valid.");
@@ -143,7 +141,8 @@ function handleNewBookSubmit(event, library){
     let id   = library.reduce(function (accumulator, book){ if(accumulator < parseInt(book.id)) accumulator = book.id; return accumulator}, 0);
     book["id"] = `${++id}`;
 
-    fetchDateFromWorldTimeAPI(event).then((date) =>{
+    fetchDateFromWorldTimeAPI(event).then((data) =>{
+      const date     = data[0];
       book.last_read = `${date}`;
 
       //Only update the local cache once the server has been posted to avoid the local site being ahead of the remote site increasing risk of data loss.
@@ -241,26 +240,30 @@ function handleExistingSubmit(event, library){
 
     let index = 0;
     const emptyKeyArray = checkObject(formData);
-    console.log(emptyKeyArray);
+    console.log("emptyKeyArray", emptyKeyArray);
+    console.log(library[index]);
 
-    console.log(formData.get("author"));
     for (; index < library.length ; ++index){
       if (library[index]["id"] === searchId){
 
         for (key of emptyKeyArray){
-          event.target[key].value = library[index][key];
+          let variable = formData.get([key])
+          variable = library[index][key];
+          debugger
         }
         break;
       }
     }
+    console.log(formData);
     console.log(formData.get("author"));
     console.log(formData.get("last_location"));
-
+    debugger
 
     //if the record is found, then proceed to process it by patching the server and rendering the updated record.
     if (index !== library.length){
 
       fetchDateFromWorldTimeAPI(formData).then((data) => {
+        debugger
         const date = data[0];
         const input = data[1];
         console.log(input);
@@ -283,6 +286,7 @@ function handleExistingSubmit(event, library){
 
           document.querySelector("#content").innerHTML = "";
           renderCard(book);
+          debugger
         }
         )
 

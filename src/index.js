@@ -1,3 +1,4 @@
+//Ignore any console logs as they were probably used in debugging
 //Global variables
 const baseURL = "http://localhost:3000";
 const basePath = "/books";
@@ -172,11 +173,11 @@ function handleExistingBook(library){
 
   info.innerHTML = ` 
                     <article>
-                      <h1>Tracking existing book tips</h1>
+                      <h1>Tips</h1>
                       <p>The track existing book section allows you to update a book record in your library. Here are some useful tips:</p>
                       <ul>
                         <li>To update a book record, you <strong>need the book ID</strong>.
-                            Head over to the <strong>search section</strong> if you do not know the book id of the book you want to track</li>
+                            Head over to the <strong>search section</strong> if you do not know the book id of the book you want to track.</li>
                         <li>Any changes to the record you make are permanent so be careful not to change anything you don't mean to.</li>
                         <li>Always offer descriptive information for the location you last read the book.</li>
                         <li>
@@ -328,10 +329,10 @@ function handleSearch(library){
 
   info.innerHTML = ` 
                     <article>
-                      <h1>Searching tips</h1>
+                      <h1>Tips</h1>
                       <p>The search book section allows you to search of for a book in your library. Here are some useful tips:</p>
                       <ul>
-                        <li>You can search your library by the following criteria: ID, title, author and date last read</li>
+                        <li>You can search your library by the following criteria: ID, title, author and date last read.</li>
                         <li>The search is not case sensitive so don't worry about casing.</li>
                         <li>Do not omit any spaces in your search query.</li>
                       </ul>
@@ -443,8 +444,10 @@ function handleLibrary(library){
                       <ul>
                         <li>You can use this section to check whether your changes have been saved.</li>
                         <li>The bookmarked page is bolded and in a different font color.</li>
-                        <li>The bookmark with the most highlights has a different colour than the rest.</li>
-                        <li>Future versions of Kitabu will have a functionality which sorts the bookmarks based on update frequency.</li>
+                        <li>
+                            The library persists on the page except: when the about section is visited; 
+                            a search query is submitted; or a book is added and/or edited(or in Kitabu vocabulary, tracked).
+                        </li>
                       </ul>
                     </article>
                     `

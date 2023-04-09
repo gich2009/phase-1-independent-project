@@ -5,7 +5,6 @@ const basePath = "/books";
 
 //This is the code that runs.
 document.addEventListener('DOMContentLoaded', () => {
-  // fetchDateFromWorldTimeAPI();
   main();
 })
 
@@ -20,8 +19,7 @@ function main(){
   });
 }
 
-  // <label for="last_read">Date Last Read:</label>
-  //                           <input type="text" id="last_read" name="last_read"></input>
+
 
 /******************************************************/
 /* Functions that add event listeners to DOM elements */
@@ -40,6 +38,8 @@ function addEventListenersOnButtons(library){
 /**************************************************/
 /* Function Handlers that act on triggered events */
 /**************************************************/
+
+//An about menu function that handles the click on about.
 function handleAbout(library){
 
  const info = document.querySelector("#info");
@@ -72,6 +72,7 @@ function handleAbout(library){
 
 
 
+//A new book function that renders the track new book section when the track new book button is clicked.
 function handleNewBook(library){
  const info = document.querySelector("#info");
 
@@ -122,6 +123,9 @@ function handleNewBook(library){
 }
 
 
+
+
+//A new book function that handles the form submit event in the track new book section.
 function handleNewBookSubmit(event, library){
   event.preventDefault();
 
@@ -161,6 +165,9 @@ function handleNewBookSubmit(event, library){
 
 
 
+
+
+//An existing book function that renders the track exisitng book section when the track exisiting book button is clicked.
 function handleExistingBook(library){
   const info = document.querySelector("#info");
 
@@ -215,6 +222,10 @@ function handleExistingBook(library){
 }
 
 
+
+
+
+//An existing book function that handles the form submit event in the track existing book section.
 function handleExistingSubmit(event, library){
   event.preventDefault();
   const formData = new FormData(event.target);
@@ -224,8 +235,7 @@ function handleExistingSubmit(event, library){
   try{
     //Validation for the data entered in the form.
     const idInvalid = isNaN(searchId) || searchId === "" || Number.isInteger(searchId) || parseInt(searchId) < 0;
-    // const fieldEmpty = event.target.id.value === "" || event.target.title.value === "" || event.target.author.value === "" || event.target.page_count.value === "" ||
-    //                    event.target.last_location.value === "" || event.target.bookmarked_page.value === "" || event.target.highlights.value === "";
+   
      if (idInvalid)
          throw("Ensure that you've provided a valid ID that is contained within your library.");
 
@@ -236,11 +246,10 @@ function handleExistingSubmit(event, library){
     console.log(formData.get("author"));
     for (; index < library.length ; ++index){
       if (library[index]["id"] === searchId){
+
         for (key of emptyKeyArray){
-          let variable = formData.get([key]);
-          variable = library[index][key];
+          event.target[key].value = library[index][key];
         }
-        // console.log(event.target["last_location"].value)
         break;
       }
     }
@@ -288,23 +297,28 @@ function handleExistingSubmit(event, library){
   }finally{
     event.target.reset();
   }
+
+  //This function is a helper for the handleExistingSubmit handler, it is meant to check the form for blank spaces.
+  //If there are any blank spaces, the records in the database will persist, if there fields have values, then the database records will be overwritten.
+  function checkObject(formData) {
+    let emptyKeyArray = [];
+
+    if (formData.get("title") === "") emptyKeyArray.push("title");
+    if (formData.get("author") === "") emptyKeyArray.push("author");
+    if (formData.get("page_count")=== "") emptyKeyArray.push("page_count");
+    if (formData.get("last_location") === "") emptyKeyArray.push("last_location");
+    if (formData.get("bookmarked_page") === "") emptyKeyArray.push ("bookmarked_page");
+    if (formData.get("highlights") === "") emptyKeyArray.push ("highlights");
+
+    return emptyKeyArray;
+  }
 }
 
 
-function checkObject(formData) {
-  let emptyKeyArray = [];
-
-  if (formData.get("title") === "") emptyKeyArray.push("title");
-  if (formData.get("author") === "") emptyKeyArray.push("author");
-  if (formData.get("page_count")=== "") emptyKeyArray.push("page_count");
-  if (formData.get("last_location") === "") emptyKeyArray.push("last_location");
-  if (formData.get("bookmarked_page") === "") emptyKeyArray.push ("bookmarked_page");
-  if (formData.get("highlights") === "") emptyKeyArray.push ("highlights");
-
-  return emptyKeyArray;
-}
 
 
+
+//A search function that renders the search book section when the search book button is clicked.
 function handleSearch(library){
   const info = document.querySelector("#info");
 
@@ -345,6 +359,9 @@ function handleSearch(library){
 }
 
 
+
+
+//A search book function that handles the form submit event in the search book section.
 function handleSearchSubmit(event, library){
   event.preventDefault();
   
@@ -410,12 +427,7 @@ function handleSearchSubmit(event, library){
 
 
 
-
-
-
-
-
-
+//A Library function that renders the library section when the library button is clicked.
 function handleLibrary(library){
 
   const info = document.querySelector("#info");
@@ -461,23 +473,6 @@ function handleLibrary(library){
 
 
 
-function renderCard(book){
-  let card =      `
-                   <div class="card">
-                     <div class="title">Title: ${book["title"]}</div>
-                     <div class="author">Author: ${book["author"]}</div>
-                     <div class="page_count">Page Count: ${book["page_count"]}</div>
-                     <div class="last_read">Date Last Read: ${book["last_read"]}</div>
-                     <div class="last_place">Last Location: ${book["last_location"]}</div>
-                     <div class="bookmarked_page">Bookmarked Page: <strong>${book["bookmarked_page"]}</strong></div>
-                     <div class="highlights">Highlights: ${book["highlights"]}</div>
-                     <div class="id">ID: <strong>${book["id"]}</strong></div>
-                  </div>
-                 `;
-
-  const content = document.querySelector("#content");
-  content.innerHTML += card;
-}
 
 
 
@@ -556,23 +551,34 @@ async function fetchDateFromWorldTimeAPI(input) {
 
 
 
-// function deleteFromServer(id){
-//   const destinationURL = baseURL + basePath + "/" + id;
-
-//   fetch(destinationURL, {method: "DELETE"}).then((response) => response.json()).then((movie) => {
-//      console.log(movie);
-//   })
-// }
-
 /*************************************************************/
 /*         Functions that reduce code redundancy             */
 /*************************************************************/
+//A render card function that acts as a template whenever a card needs to be rendered.
+function renderCard(book){
+  let card =      `
+                   <div class="card">
+                     <div class="title">Title: ${book["title"]}</div>
+                     <div class="author">Author: ${book["author"]}</div>
+                     <div class="page_count">Page Count: ${book["page_count"]}</div>
+                     <div class="last_read">Date Last Read: ${book["last_read"]}</div>
+                     <div class="last_place">Last Location: ${book["last_location"]}</div>
+                     <div class="bookmarked_page">Bookmarked Page: <strong>${book["bookmarked_page"]}</strong></div>
+                     <div class="highlights">Highlights: ${book["highlights"]}</div>
+                     <div class="id">ID: <strong>${book["id"]}</strong></div>
+                  </div>
+                 `;
+
+  const content = document.querySelector("#content");
+  content.innerHTML += card;
+}
+
+
 function constructBook(bookEntry){
   const book = {
     title:           bookEntry["title"].value,
     author:          bookEntry["author"].value,
     page_count:      bookEntry["page_count"].value,
-    // last_read:       bookEntry.last_read.value,
     last_location:   bookEntry["last_location"].value,
     bookmarked_page: bookEntry["bookmarked_page"].value,
     highlights:      bookEntry["highlights"].value,
@@ -580,162 +586,3 @@ function constructBook(bookEntry){
 
   return book;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-//  let buttonWithHandlerObjects = [
-//                                   {id: "about" ,       handleFunction: "handleAbout"}, 
-//                                   {id: "newBook",      handleFunction: "handleNewBook"},
-//                                   {id: "existingBook", handleFunction: "handleExistingBook"},
-//                                   {id: "search",       handleFunction: "handleSearch"},
-//                                   {id: "library",      handleFunction: "handleLibrary"}
-//                                  ];
-
-//   for (button of buttonWithHandlerObjects){
-//     bindEventListenerToHandler(button["id"], button["handleFunction"]);
-//   }
-
-
-
-// function bindEventListenerToHandler(id, handleFunction, event = "click"){
-//   document.querySelector(`#${id}`).addEventListener(event, handleFunction);
-// }
-
-// function handleBuyTicket(event, movies){
-//   const ticketNum = document.querySelector("#ticket-num");
-//   let ticketNumInteger = parseInt(ticketNum.textContent, 10);
-
-//   let movieList = document.querySelectorAll("#films li");
-//   const currentMovieTitle = document.querySelector("#title");
-
-//   movieList = Array.from(movieList);  
-
-//   //Find the current movie being rendered by comparing the currently rendered title with the list of movie titles in the side menu.
-//   const movieCurrentlyRendered = movieList.find((movie) => (movie.textContent === currentMovieTitle.textContent));
-
-//   //If no ticket remaining, change button text and return.
-//   if (ticketNumInteger === 0){
-//     const buyTicket = document.querySelector("#buy-ticket");
-//     buyTicket.textContent = "Sold Out";
-    
-//     movieCurrentlyRendered.classList.add("sold-out");
-
-//     return;
-//   }
-
-//   ticketNumInteger -= 1;
-
-//   ticketNum.textContent = `${ticketNumInteger}`;
-//   movieCurrentlyRendered.dataset.tickets_sold = `${parseInt(movieCurrentlyRendered.dataset.tickets_sold, 10) + 1}`;
-
-//   serverPatch(movieCurrentlyRendered);
-
-
-//Deletes a movie and if it is the one being currently rendered, renders the one before it
-// function handleDeleteMovie(event){
-//   let currentId = event.target.dataset.id;
-
-//   let movieList = document.querySelectorAll("ul#films > li");
-//   movieList = Array.from(movieList);
-//   console.log(movieList)
-
-//   let deleteIndex = movieList.findIndex((movie) => movie.dataset.id === currentId);
-//   let previousIndex = deleteIndex - 1;
-
-//   //If it the first movie is to be deleted, then the previous movie is the one after it.
-//   if (deleteIndex === 0){
-//     previousIndex = deleteIndex + 1; 
-//   }
-  
-//   let movieToDelete = movieList[deleteIndex];
-  
-//   const movieBeforeMovieToDelete = movieList[previousIndex];
-
-//   const previousMovie = constructMovie(movieBeforeMovieToDelete);
-
-//   const currentMovieTitle = document.querySelector("#title");
-
-//   if (currentMovieTitle.textContent === movieToDelete.textContent){
-//     renderCard(previousMovie);
-//   }
-
-
-//   movieToDelete.remove();
-//   event.target.remove();
-
-//   serverDelete(currentId);
-// }
-
-
-// function handleSideMenu(event){
-//   renderCard(constructMovie(event.target));
-// }
-
-
-/*************************************************************/
-/* Functions that render the information by DOM manipulation */
-/*************************************************************/
-// function renderCard(movie){
-//   let poster = document.querySelector("#poster");
-//   poster.src = movie.poster;
-//   poster.alt = movie.title;
-
-//   const card = document.querySelector(".card");
-
-//   card.querySelector("#title").textContent      = movie.title;
-//   card.querySelector("#runtime").textContent    = `${movie.runtime}` + " minutes";
-//   card.querySelector("#film-info").textContent  = movie.description;
-//   card.querySelector("#showtime").textContent   = movie.showtime;
-//   card.querySelector("#ticket-num").textContent = `${parseInt(movie.capacity, 10) - parseInt(movie.tickets_sold, 10)}`;
-
-//   const buyTicket = document.querySelector("#buy-ticket");
-
-//   if (movie.capacity !== movie.tickets_sold){
-//     buyTicket.textContent = "Buy Ticket";
-//   } else {
-//     buyTicket.textContent = "Sold Out";
-//   }
-// }
-
-
-// function renderMovieInSideMenu(movie){
-//   const movieTitle = document.createElement("li");
-//   movieTitle.classList.add("film");
-//   movieTitle.classList.add("item");
-//   movieTitle.id = "li" + `${movie.id}`;
-  
-//   //Cache all the data of the movie from the server database in the dataset attribute(data-*) of the new movie list element.
-//   //An alternative way to do this would be to create a single object to hold all the data in the dataset attribute, but for simplicity,
-//   //all the data properties were stored in different variables in the dataset attribute.
-//   movieTitle.dataset.capacity = movie.capacity;
-//   movieTitle.dataset.tickets_sold = movie.tickets_sold;
-//   movieTitle.dataset.id = movie.id;
-//   movieTitle.dataset.runtime = movie.runtime;
-//   movieTitle.dataset.showtime = movie.showtime;
-//   movieTitle.dataset.description = movie.description;
-//   movieTitle.dataset.poster = movie.poster;
-
-
-//   //An event listener to the li element is added here instead of adding it in the addEventListeners section.
-//   movieTitle.addEventListener("click", handleSideMenu);
-
-//   movieTitle.textContent = movie.title;
-
-//   const deleteButton = document.createElement("button");
-//   deleteButton.textContent = "X";
-//   deleteButton.addEventListener("click", handleDeleteMovie);
-//   deleteButton.dataset.id = movie.id;
-
-//   document.querySelector("#films").appendChild(movieTitle);
-//   document.querySelector("#films").appendChild(deleteButton);
-// }

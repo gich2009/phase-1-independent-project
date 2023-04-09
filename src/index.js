@@ -250,7 +250,6 @@ function handleExistingSubmit(event, library){
         for (key of emptyKeyArray){
           let variable = formData.get([key])
           variable = library[index][key];
-          debugger
         }
         break;
       }
@@ -258,13 +257,11 @@ function handleExistingSubmit(event, library){
     console.log(formData);
     console.log(formData.get("author"));
     console.log(formData.get("last_location"));
-    debugger
 
     //if the record is found, then proceed to process it by patching the server and rendering the updated record.
     if (index !== library.length){
 
       fetchDateFromWorldTimeAPI(formData).then((data) => {
-        debugger
         const date = data[0];
         const input = data[1];
         console.log(input);
@@ -287,7 +284,6 @@ function handleExistingSubmit(event, library){
 
           document.querySelector("#content").innerHTML = "";
           renderCard(book);
-          debugger
         }
         )
 

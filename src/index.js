@@ -15,6 +15,7 @@ function main(){
   fetchLibrary().then((library) => {
   
   addEventListenersOnButtons(library);
+
   });
 }
 
@@ -30,7 +31,6 @@ function addEventListenersOnButtons(library){
   document.querySelector("#search").addEventListener("click", () => handleSearch(library));
   document.querySelector("#library").addEventListener("click", () => handleLibrary(library));
 }
-
 
 
 
@@ -125,14 +125,15 @@ function handleNewBook(library){
 
 function handleNewBookSubmit(event, library){
   event.preventDefault();
-  console.log(library);
   
   const book = constructBook(event.target);
-  const libraryArray = Array.from(library);
   id = library.reduce(function (accumulator, book){ if(accumulator < parseInt(book.id)) accumulator = book.id; return accumulator}, 0);
-  console.log(id);
   book["id"] = `${++id}`;
   postToServer(book);
+  library.push(book);
+  const content = document.querySelector("#content");
+  content.innerHTML = "";
+  renderCard(book);
 
   event.target.reset();
 }
@@ -192,11 +193,39 @@ function handleExistingBook(library){
                         </form>
                       </div>
                       `
-  document.querySelector("#trackExisitingForm").addEventListener("submit", handleExistingSubmit);
+  document.querySelector("#trackExistingForm").addEventListener("submit", (event) => handleExistingSubmit(event, library));
 }
 
 
-function handleExistingSubmit(event){
+function handleExistingSubmit(event, library){
+  event.preventDefault();
+  const searchId = `${event.target.id.value}`;
+  let index = 0;
+
+  for (; index < library.length ; ++index){
+    if (library[index]["id"] === searchId){
+      console.log(library[index])
+      library[index] = constructBook(event.target);
+      console.log(library[index])
+      library[index]["id"] = searchId;
+      console.log(library[index]);
+      found = true;
+      break;
+    }
+  }
+
+  //if the record is found, then proceed to process it by patching the server and rendering the updated record.
+  if (index !== library.length){
+    const book = constructBook(event.target);
+    console.log(id);
+    book["id"] = `${searchId}`;
+    document.querySelector("#content").innerHTML = "";
+    renderCard(book);
+
+    patchToServer(book);
+  }
+
+  event.target.reset();
 
 }
 
@@ -237,16 +266,40 @@ function handleSearch(library){
                     </div>
                     `
 
-  document.querySelector("#searchForm").addEventListener("submit", handleSearchSubmit);
-  console.log(library);
+  document.querySelector("#searchForm").addEventListener("submit",  (event) => handleSearchSubmit(event, library));
 }
 
 
+function handleSearchSubmit(event, library){
+  event.preventDefault();
+  
+  if (event.target.search_by.value === "id" ){
+    const book = library.find(function(book) {return book.id === event.target.search_query.value});
+    document.querySelector("#content").innerHTML = "";
+    console.log(book);
+    renderCard(book);
+  }
 
+  if (event.target.search_by.value === "title"){
+    const books = library.filter(function(book) {return book.title.toLowerCase() === event.target.search_query.value.toLowerCase()});
+    document.querySelector("#content").innerHTML = "";
+    books.forEach((book) => renderCard(book));
+  }
 
+  if (event.target.search_by.value === "author"){
+    const books = library.filter(function(book) {return book.author.toLowerCase() === event.target.search_query.value.toLowerCase()});
+    document.querySelector("#content").innerHTML = "";
+    books.forEach((book) => renderCard(book));
+  }
 
-function handleSearchSubmit(event){
+  if (event.target.search_by.value === "last_read"){
+    const books = library.filter(function(book) {return book.last_read === event.target.search_query.value});
+    document.querySelector("#content").innerHTML = "";
+    books.forEach((book) => renderCard(book));
+  }
+  
 
+  event.target.reset();
 }
 
 
@@ -274,20 +327,21 @@ function handleLibrary(library){
                     </article>
                     `
   cardTemplate = `<div class="card-container">`;
-  libraryArray = Array.from(library);
 
-  for (book of libraryArray){
-  cardTemplate += `
-                   <div class="card">
-                    <div class="title">Title: ${book["title"]}</div>
-                    <div class="author">Author: ${book["author"]}</div>
-                    <div class="page_count">Page Count: ${book["page_count"]}</div>
-                    <div class="last_read">Date Last Read: ${book["last_read"]}</div>
-                    <div class="last_place">Last Location: ${book["last_location"]}</div>
-                    <div class="bookmarked_page">Bookmarked Page: <strong>${book["bookmarked_page"]}</strong></div>
-                    <div class="highlights">Highlights: ${book["highlights"]}</div>
-                  </div>
-                 `
+
+  for (book of library){
+    cardTemplate += `
+                    <div class="card">
+                      <div class="title">Title: ${book["title"]}</div>
+                      <div class="author">Author: ${book["author"]}</div>
+                      <div class="page_count">Page Count: ${book["page_count"]}</div>
+                      <div class="last_read">Date Last Read: ${book["last_read"]}</div>
+                      <div class="last_place">Last Location: ${book["last_location"]}</div>
+                      <div class="bookmarked_page">Bookmarked Page: <strong>${book["bookmarked_page"]}</strong></div>
+                      <div class="highlights">Highlights: ${book["highlights"]}</div>
+                      <div class="id">ID: <strong>${book["id"]}</strong></div>
+                    </div>
+                    `
   }
 
   cardTemplate += `</div>`;
@@ -297,6 +351,26 @@ function handleLibrary(library){
 
 
   console.log(library);
+}
+
+
+
+function renderCard(book){
+  let card =      `
+                   <div class="card">
+                     <div class="title">Title: ${book["title"]}</div>
+                     <div class="author">Author: ${book["author"]}</div>
+                     <div class="page_count">Page Count: ${book["page_count"]}</div>
+                     <div class="last_read">Date Last Read: ${book["last_read"]}</div>
+                     <div class="last_place">Last Location: ${book["last_location"]}</div>
+                     <div class="bookmarked_page">Bookmarked Page: <strong>${book["bookmarked_page"]}</strong></div>
+                     <div class="highlights">Highlights: ${book["highlights"]}</div>
+                     <div class="id">ID: <strong>${book["id"]}</strong></div>
+                  </div>
+                 `;
+
+  const content = document.querySelector("#content");
+  content.innerHTML += card;
 }
 
 
@@ -329,37 +403,30 @@ function postToServer(book){
 
 }
 
-function patchToServer(movieList){
-  const movie = {
-    tickets_sold: movieList.dataset.tickets_sold
-  }
 
+function patchToServer(book){
   const destinationURL = baseURL + basePath;
   
-  fetch(destinationURL + `/${movieList.dataset.id}`, {
+  fetch(destinationURL + `/${book.id}`, {
     method: "PATCH",
     headers: {"Content-Type": "application/json",
               "Accept": "application/json"
              },
-    body: JSON.stringify(movie) 
+    body: JSON.stringify(book) 
   })
-  .then((response) => response.json()).then((movie) => {
-    console.log(movie);
-  })
+  .then((response) => response.json())
+  .then((book) => {console.log(book);})
   .catch((error) => console.error(error));
 }
 
 
-function deleteFromServer(id){
-  const destinationURL = baseURL + basePath + "/" + id;
+// function deleteFromServer(id){
+//   const destinationURL = baseURL + basePath + "/" + id;
 
-  fetch(destinationURL, {method: "DELETE"}).then((response) => response.json()).then((movie) => {
-     console.log(movie);
-  })
-}
-
-
-
+//   fetch(destinationURL, {method: "DELETE"}).then((response) => response.json()).then((movie) => {
+//      console.log(movie);
+//   })
+// }
 
 /*************************************************************/
 /*         Functions that reduce code redundancy             */
@@ -379,9 +446,6 @@ function constructBook(bookEntry){
 }
 
 
-function constructForm(){
-
-}
 
 
 

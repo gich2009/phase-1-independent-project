@@ -508,7 +508,8 @@ button[type="submit"]:hover {
         .card .last_read,
         .card .last_place,
         .card .bookmarked_page,
-        .card .highlights {
+        .card .highlights 
+        .card .id{
             margin-bottom: 10px;
         }
 
@@ -522,7 +523,8 @@ button[type="submit"]:hover {
         .card .last_read,
         .card .last_place,
         .card .bookmarked_page,
-        .card .highlights {
+        .card .highlights, 
+        .card .id{
             font-size: 0.9rem;
             font-weight: normal;
         }

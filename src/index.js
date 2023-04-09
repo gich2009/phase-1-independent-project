@@ -299,33 +299,64 @@ function handleSearch(library){
 function handleSearchSubmit(event, library){
   event.preventDefault();
   
+  //Case of search by ID
   if (event.target.search_by.value === "id" ){
-    const book = library.find(function(book) {return book.id === event.target.search_query.value});
-    document.querySelector("#content").innerHTML = "";
-    console.log(book);
-    renderCard(book);
+    try{
+      const book = library.find(function(book) {return book.id === event.target.search_query.value});
+      if (book === undefined) 
+        throw("ID not found.");
+      document.querySelector("#content").innerHTML = "";
+      renderCard(book);
+
+    }catch(exception){
+      alert(exception);
+    }
   }
 
+  //Case of search by Title
   if (event.target.search_by.value === "title"){
-    const books = library.filter(function(book) {return book.title.toLowerCase() === event.target.search_query.value.toLowerCase()});
-    document.querySelector("#content").innerHTML = "";
-    books.forEach((book) => renderCard(book));
+    try{
+      const books = library.filter(function(book) {return book.title.toLowerCase() === event.target.search_query.value.toLowerCase()});
+      if (books.length === 0) throw ("Title is not in your library.")
+      document.querySelector("#content").innerHTML = "";
+      books.forEach((book) => renderCard(book));
+
+    }catch (exception){
+      alert(exception);
+    }
+    event.target.reset();
+    return;
   }
 
+  //Case of search by Author
   if (event.target.search_by.value === "author"){
-    const books = library.filter(function(book) {return book.author.toLowerCase() === event.target.search_query.value.toLowerCase()});
-    document.querySelector("#content").innerHTML = "";
-    books.forEach((book) => renderCard(book));
+    try{
+      const books = library.filter(function(book) {return book.author.toLowerCase() === event.target.search_query.value.toLowerCase()});
+      if (books.length === 0) throw("Author not found.")
+      document.querySelector("#content").innerHTML = "";
+      books.forEach((book) => renderCard(book));
+
+    }catch(exception){
+      alert(exception);
+    }
+    event.target.reset();
+    return;
   }
 
+  //Case of search by date last read
   if (event.target.search_by.value === "last_read"){
-    const books = library.filter(function(book) {return book.last_read === event.target.search_query.value});
-    document.querySelector("#content").innerHTML = "";
-    books.forEach((book) => renderCard(book));
-  }
-  
+    try{
+      const books = library.filter(function(book) {return book.last_read === event.target.search_query.value});
+      if (books.length === 0) throw("No book in library matches the given date.")
+      document.querySelector("#content").innerHTML = "";
+      books.forEach((book) => renderCard(book));
 
-  event.target.reset();
+    }catch (exception){
+     alert(exception);
+    }
+    event.target.reset();
+    return;
+  }
 }
 
 

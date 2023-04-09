@@ -132,7 +132,7 @@ function handleNewBookSubmit(event, library){
   try{
     //Validation for the data entered in the form.
     const fieldEmpty = event.target.title.value === ""       || event.target.author.value === ""          || event.target.page_count.value === "" ||
-                     event.target.last_location.value === "" || event.target.bookmarked_page.value === "" ;
+                     event.target.last_location.value === "" || event.target.bookmarked_page.value === "" || event.target.highlights.value === "" ;
 
     if (fieldEmpty)
          throw("All fields are required, ensure that the properties entered are valid.");

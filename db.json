@@ -5,7 +5,7 @@
       "title": "Dune",
       "author": "Frank Herbert",
       "page_count": "896",
-      "last_read": "2020-04-10",
+      "last_read": "4/10/2020",
       "last_location": "Home",
       "bookmarked_page": "600",
       "highlights": "470: Isn't it odd how we misunderstand the hidden unity of kindness and cruelty?"
@@ -15,7 +15,7 @@
       "title": "Surely You're Joking Mr. Feynman",
       "author": "Richard Feynman",
       "page_count": "352",
-      "last_read": "2020-05-27",
+      "last_read": "5/27/2020",
       "last_location": "Daniel's place",
       "bookmarked_page": "130",
       "highlights": "100: I learned from her that every woman is worried about her looks, no matter how beautiful she is."
@@ -25,7 +25,7 @@
       "title": "The Holy Bible",
       "author": "Multiple authors",
       "page_count": "1200",
-      "last_read": "2022-06-14",
+      "last_read": "6/14/2022",
       "last_location": "St. Andrew's Cathedral",
       "bookmarked_page": "1100",
       "highlights": "Phillipians 4:6: Do not be anxious about anything, but in everything, by prayer and petition, with thanksgiving, present your requests to God."
@@ -34,11 +34,21 @@
       "title": "A Brief History of Time",
       "author": "Stephen Hawking",
       "page_count": "256",
-      "last_read": "2022-10-10",
+      "last_read": "10/10/2022",
       "last_location": "School: Jomo Kenyatta University of Agriculture and Techonology",
       "bookmarked_page": "100",
       "highlights": "\"50: If time travel is possible, where are the tourists from the future?\"",
       "id": "4"
+    },
+    {
+      "title": "Mstahiki Meya",
+      "author": "Timothy M. Arege",
+      "page_count": "80",
+      "last_location": "The office",
+      "bookmarked_page": "50",
+      "highlights": "30: Viyai vidogo, bloody hens!",
+      "id": "5",
+      "last_read": "4/9/2023"
     }
   ]
 }

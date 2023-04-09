@@ -5,6 +5,7 @@ const basePath = "/books";
 
 //This is the code that runs.
 document.addEventListener('DOMContentLoaded', () => {
+  // fetchDateFromWorldTimeAPI();
   main();
 })
 
@@ -19,7 +20,8 @@ function main(){
   });
 }
 
-
+  // <label for="last_read">Date Last Read:</label>
+  //                           <input type="text" id="last_read" name="last_read"></input>
 
 /******************************************************/
 /* Functions that add event listeners to DOM elements */
@@ -103,9 +105,6 @@ function handleNewBook(library){
                             <label for="page_count">Page Count:</label>
                             <input type="number" id="page_count" name="page_count" placeholder="221">
 
-                            <label for="last_read">Date Last Read:</label>
-                            <input type="text" id="last_read" name="last_read">
-
                             <label for="last_place">Last Location:</label>
                             <input type="text" id="last_location" name="last_place" placeholder="Home">
 
@@ -125,23 +124,33 @@ function handleNewBook(library){
 
 function handleNewBookSubmit(event, library){
   event.preventDefault();
+
   try{
     //Validation for the data entered in the form.
-    const idInvalid = isNaN(event.target.id.value) || event.target.id.value === "" || Number.isInteger(event.target.id.value) || parseInt(event.target.id.value) < 0
-    const fieldEmpty = event.target.id.value === "" || event.target.title.value === "" || event.target.author.value || event.target.page_count.value === "" ||
-                       event.target.last_location.value === "" || event.target.bookmarked_page.value === "" || event.target.highlights.value ===""
-    if (idInvalid || fieldEmpty)
+    const fieldEmpty = event.target.title.value === ""       || event.target.author.value === ""          || event.target.page_count.value === "" ||
+                     event.target.last_location.value === "" || event.target.bookmarked_page.value === "" || event.target.highlights.value ==="";
+
+    console.log(fieldEmpty);
+
+    if (fieldEmpty)
          throw("All fields are required, ensure that the properties entered are valid.");
 
-    const book = constructBook(event.target);
-    id = library.reduce(function (accumulator, book){ if(accumulator < parseInt(book.id)) accumulator = book.id; return accumulator}, 0);
+    let book = constructBook(event.target);
+    let id   = library.reduce(function (accumulator, book){ if(accumulator < parseInt(book.id)) accumulator = book.id; return accumulator}, 0);
     book["id"] = `${++id}`;
-    postToServer(book);
-    library.push(book);
-    const content = document.querySelector("#content");
-    content.innerHTML = "";
-    renderCard(book);
 
+    fetchDateFromWorldTimeAPI().then((date) =>{
+      book.last_read = `${date}`;
+
+      //Only update the local cache once the server has been posted to avoid the local site being ahead of the remote site increasing risk of data loss.
+      postToServer(book).then(() => {
+        library.push(book);
+        const content = document.querySelector("#content");
+        content.innerHTML = "";
+        renderCard(book);
+      })
+    })
+    
   }catch(error){
     alert(error);
 
@@ -444,7 +453,7 @@ async function fetchLibrary(){
 }
 
 
-function postToServer(book){
+async function postToServer(book){
   console.log(book);
   const destinationURL = baseURL + basePath;
 
@@ -457,7 +466,6 @@ function postToServer(book){
   .then((response) => response.json())
   .then((book) => console.log(book))
   .catch((error) => console.error(error));
-
 }
 
 
@@ -477,6 +485,31 @@ function patchToServer(book){
 }
 
 
+
+//Fetching the date from a public API.
+async function fetchDateFromWorldTimeAPI(){
+  const timezone = "Africa/Nairobi";
+  const url = `http://worldtimeapi.org/api/timezone/${timezone}`;
+
+  return fetch(url)
+         .then(response => {
+           if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+           }
+           return response.json();
+          })
+         .then(data => {
+           const dateTime = new Date(data.datetime);
+           const date = dateTime.toLocaleDateString(undefined, {timeZone: timezone});
+           console.log(`The current date in ${timezone} is: ${date}`);
+           return date;
+          })
+         .catch(error => {
+           console.error(`Fetch error: ${error}`);
+          });
+}
+
+
 // function deleteFromServer(id){
 //   const destinationURL = baseURL + basePath + "/" + id;
 
@@ -493,7 +526,7 @@ function constructBook(bookEntry){
     title:           bookEntry.title.value,
     author:          bookEntry.author.value,
     page_count:      bookEntry.page_count.value,
-    last_read:       bookEntry.last_read.value,
+    // last_read:       bookEntry.last_read.value,
     last_location:   bookEntry.last_location.value,
     bookmarked_page: bookEntry.bookmarked_page.value,
     highlights:      bookEntry.highlights.value,

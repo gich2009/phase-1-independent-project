@@ -208,7 +208,7 @@ article {
   position: relative;
   min-height: 500px;
   /* width: 1000px; */
-  min-width: 870px;
+  min-width: 860px;
   margin-left: 20px;
   /* width: 100%; */
   transform: scale(1, 1);
@@ -252,7 +252,7 @@ article {
   margin-top: 0;
   /* align-content: center; */
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
 }
 
 #content > img {

@@ -1,7 +1,6 @@
 //Global variables
 const baseURL = "http://localhost:3000";
 const basePath = "/books";
-// const homePage = "/1";
 
 
 //This is the code that runs.
@@ -16,15 +15,7 @@ function main(){
   fetchLibrary().then((library) => {
   
   addEventListenersOnButtons(library);
-  
-
   });
-
-  // addEventListenersOnButtons();
-
-  // renderHomePage();
-  // renderSideMenu();
-  // addEventListenerOnBuyTicket();
 }
 
 
@@ -78,6 +69,7 @@ function handleAbout(library){
 }
 
 
+
 function handleNewBook(library){
  const info = document.querySelector("#info");
 
@@ -127,26 +119,25 @@ function handleNewBook(library){
                         </form>
                       </div>
                       `
-  document.querySelector("#trackNewForm").addEventListener("submit", handleNewSubmit);
-
-  console.log(library);
+  document.querySelector("#trackNewForm").addEventListener("submit", (event) => handleNewBookSubmit(event, library));
 }
 
 
-function handleNewSubmit(event){
+function handleNewBookSubmit(event, library){
   event.preventDefault();
+  console.log(library);
+  
+  const book = constructBook(event.target);
+  const libraryArray = Array.from(library);
+  id = library.reduce(function (accumulator, book){ if(accumulator < parseInt(book.id)) accumulator = book.id; return accumulator}, 0);
+  console.log(id);
+  book["id"] = `${++id}`;
+  postToServer(book);
 
-
-
-
-
+  event.target.reset();
 }
 
 
-
-
-{/* <label for="id">ID:</label>
-            <input type="text" id="id" name="id"></input> */}
 
 function handleExistingBook(library){
   const info = document.querySelector("#info");
@@ -201,7 +192,12 @@ function handleExistingBook(library){
                         </form>
                       </div>
                       `
-  document.querySelector("#trackExisitingForm").addEventListener("submit", handleNewSubmit);
+  document.querySelector("#trackExisitingForm").addEventListener("submit", handleExistingSubmit);
+}
+
+
+function handleExistingSubmit(event){
+
 }
 
 
@@ -241,9 +237,24 @@ function handleSearch(library){
                     </div>
                     `
 
-  document.querySelector("#searchForm").addEventListener("submit", handleNewSubmit);
+  document.querySelector("#searchForm").addEventListener("submit", handleSearchSubmit);
   console.log(library);
 }
+
+
+
+
+
+function handleSearchSubmit(event){
+
+}
+
+
+
+
+
+
+
 
 
 function handleLibrary(library){
@@ -289,176 +300,36 @@ function handleLibrary(library){
 }
 
 
-function handleBuyTicket(event, movies){
-  const ticketNum = document.querySelector("#ticket-num");
-  let ticketNumInteger = parseInt(ticketNum.textContent, 10);
-
-  let movieList = document.querySelectorAll("#films li");
-  const currentMovieTitle = document.querySelector("#title");
-
-  movieList = Array.from(movieList);  
-
-  //Find the current movie being rendered by comparing the currently rendered title with the list of movie titles in the side menu.
-  const movieCurrentlyRendered = movieList.find((movie) => (movie.textContent === currentMovieTitle.textContent));
-
-  //If no ticket remaining, change button text and return.
-  if (ticketNumInteger === 0){
-    const buyTicket = document.querySelector("#buy-ticket");
-    buyTicket.textContent = "Sold Out";
-    
-    movieCurrentlyRendered.classList.add("sold-out");
-
-    return;
-  }
-
-  ticketNumInteger -= 1;
-
-  ticketNum.textContent = `${ticketNumInteger}`;
-  movieCurrentlyRendered.dataset.tickets_sold = `${parseInt(movieCurrentlyRendered.dataset.tickets_sold, 10) + 1}`;
-
-  serverPatch(movieCurrentlyRendered);
-}
-
-
-//Deletes a movie and if it is the one being currently rendered, renders the one before it
-function handleDeleteMovie(event){
-  let currentId = event.target.dataset.id;
-
-  let movieList = document.querySelectorAll("ul#films > li");
-  movieList = Array.from(movieList);
-  console.log(movieList)
-
-  let deleteIndex = movieList.findIndex((movie) => movie.dataset.id === currentId);
-  let previousIndex = deleteIndex - 1;
-
-  //If it the first movie is to be deleted, then the previous movie is the one after it.
-  if (deleteIndex === 0){
-    previousIndex = deleteIndex + 1; 
-  }
-  
-  let movieToDelete = movieList[deleteIndex];
-  
-  const movieBeforeMovieToDelete = movieList[previousIndex];
-
-  const previousMovie = constructMovie(movieBeforeMovieToDelete);
-
-  const currentMovieTitle = document.querySelector("#title");
-
-  if (currentMovieTitle.textContent === movieToDelete.textContent){
-    renderCard(previousMovie);
-  }
-
-
-  movieToDelete.remove();
-  event.target.remove();
-
-  serverDelete(currentId);
-}
-
-
-function handleSideMenu(event){
-  renderCard(constructMovie(event.target));
-}
-
-
-
-
-/*************************************************************/
-/* Functions that render the information by DOM manipulation */
-/*************************************************************/
-function renderCard(movie){
-  let poster = document.querySelector("#poster");
-  poster.src = movie.poster;
-  poster.alt = movie.title;
-
-  const card = document.querySelector(".card");
-
-  card.querySelector("#title").textContent      = movie.title;
-  card.querySelector("#runtime").textContent    = `${movie.runtime}` + " minutes";
-  card.querySelector("#film-info").textContent  = movie.description;
-  card.querySelector("#showtime").textContent   = movie.showtime;
-  card.querySelector("#ticket-num").textContent = `${parseInt(movie.capacity, 10) - parseInt(movie.tickets_sold, 10)}`;
-
-  const buyTicket = document.querySelector("#buy-ticket");
-
-  if (movie.capacity !== movie.tickets_sold){
-    buyTicket.textContent = "Buy Ticket";
-  } else {
-    buyTicket.textContent = "Sold Out";
-  }
-}
-
-
-function renderMovieInSideMenu(movie){
-  const movieTitle = document.createElement("li");
-  movieTitle.classList.add("film");
-  movieTitle.classList.add("item");
-  movieTitle.id = "li" + `${movie.id}`;
-  
-  //Cache all the data of the movie from the server database in the dataset attribute(data-*) of the new movie list element.
-  //An alternative way to do this would be to create a single object to hold all the data in the dataset attribute, but for simplicity,
-  //all the data properties were stored in different variables in the dataset attribute.
-  movieTitle.dataset.capacity = movie.capacity;
-  movieTitle.dataset.tickets_sold = movie.tickets_sold;
-  movieTitle.dataset.id = movie.id;
-  movieTitle.dataset.runtime = movie.runtime;
-  movieTitle.dataset.showtime = movie.showtime;
-  movieTitle.dataset.description = movie.description;
-  movieTitle.dataset.poster = movie.poster;
-
-
-  //An event listener to the li element is added here instead of adding it in the addEventListeners section.
-  movieTitle.addEventListener("click", handleSideMenu);
-
-  movieTitle.textContent = movie.title;
-
-  const deleteButton = document.createElement("button");
-  deleteButton.textContent = "X";
-  deleteButton.addEventListener("click", handleDeleteMovie);
-  deleteButton.dataset.id = movie.id;
-
-  document.querySelector("#films").appendChild(movieTitle);
-  document.querySelector("#films").appendChild(deleteButton);
-}
-
-
-
 
 /***************************************************/
 /*   Functions that communicate with the server.   */
 /***************************************************/
 async function fetchLibrary(){
-  const destinationURL = baseURL + basePath;
+  const sourceURL = baseURL + basePath;
 
-  return fetch(destinationURL, {method: "GET"})
+  return fetch(sourceURL, {method: "GET"})
          .then((response) => response.json())
          .then((books) => books);
 }
 
 
-
-
-// function renderHomePage(){
-//   const destinationURL = baseURL + basePath + homePage;
-
-//   fetch(destinationURL, {method: "GET"}).then((response) => response.json()).then((movie) => {
-//     renderCard(movie);
-//   })
-
-// }
-
-
-function renderSideMenu(){
+function postToServer(book){
+  console.log(book);
   const destinationURL = baseURL + basePath;
 
-  fetch(destinationURL, {method: "GET"}).then((response) => response.json()).then((movies) => {
-    movies.forEach((movie) => renderMovieInSideMenu(movie));
+  fetch(destinationURL, {
+    method: "POST",
+    headers: {"Content-Type": "application/json",
+             },
+    body: JSON.stringify(book)
   })
+  .then((response) => response.json())
+  .then((book) => console.log(book))
+  .catch((error) => console.error(error));
 
 }
 
-
-function serverPatch(movieList){
+function patchToServer(movieList){
   const movie = {
     tickets_sold: movieList.dataset.tickets_sold
   }
@@ -479,7 +350,7 @@ function serverPatch(movieList){
 }
 
 
-function serverDelete(id){
+function deleteFromServer(id){
   const destinationURL = baseURL + basePath + "/" + id;
 
   fetch(destinationURL, {method: "DELETE"}).then((response) => response.json()).then((movie) => {
@@ -493,19 +364,18 @@ function serverDelete(id){
 /*************************************************************/
 /*         Functions that reduce code redundancy             */
 /*************************************************************/
-function constructMovie(movieInList){
-  const movie = {
-    id:           movieInList.dataset.id,
-    title:        movieInList.textContent,
-    runtime:      movieInList.dataset.runtime,
-    capacity:     movieInList.dataset.capacity,
-    showtime:     movieInList.dataset.showtime,
-    tickets_sold: movieInList.dataset.tickets_sold,
-    description:  movieInList.dataset.description,
-    poster:       movieInList.dataset.poster
+function constructBook(bookEntry){
+  const book = {
+    title:           bookEntry.title.value,
+    author:          bookEntry.author.value,
+    page_count:      bookEntry.page_count.value,
+    last_read:       bookEntry.last_read.value,
+    last_location:   bookEntry.last_location.value,
+    bookmarked_page: bookEntry.bookmarked_page.value,
+    highlights:      bookEntry.highlights.value,
   }
 
-  return movie;
+  return book;
 }
 
 
@@ -539,4 +409,133 @@ function constructForm(){
 
 // function bindEventListenerToHandler(id, handleFunction, event = "click"){
 //   document.querySelector(`#${id}`).addEventListener(event, handleFunction);
+// }
+
+// function handleBuyTicket(event, movies){
+//   const ticketNum = document.querySelector("#ticket-num");
+//   let ticketNumInteger = parseInt(ticketNum.textContent, 10);
+
+//   let movieList = document.querySelectorAll("#films li");
+//   const currentMovieTitle = document.querySelector("#title");
+
+//   movieList = Array.from(movieList);  
+
+//   //Find the current movie being rendered by comparing the currently rendered title with the list of movie titles in the side menu.
+//   const movieCurrentlyRendered = movieList.find((movie) => (movie.textContent === currentMovieTitle.textContent));
+
+//   //If no ticket remaining, change button text and return.
+//   if (ticketNumInteger === 0){
+//     const buyTicket = document.querySelector("#buy-ticket");
+//     buyTicket.textContent = "Sold Out";
+    
+//     movieCurrentlyRendered.classList.add("sold-out");
+
+//     return;
+//   }
+
+//   ticketNumInteger -= 1;
+
+//   ticketNum.textContent = `${ticketNumInteger}`;
+//   movieCurrentlyRendered.dataset.tickets_sold = `${parseInt(movieCurrentlyRendered.dataset.tickets_sold, 10) + 1}`;
+
+//   serverPatch(movieCurrentlyRendered);
+
+
+//Deletes a movie and if it is the one being currently rendered, renders the one before it
+// function handleDeleteMovie(event){
+//   let currentId = event.target.dataset.id;
+
+//   let movieList = document.querySelectorAll("ul#films > li");
+//   movieList = Array.from(movieList);
+//   console.log(movieList)
+
+//   let deleteIndex = movieList.findIndex((movie) => movie.dataset.id === currentId);
+//   let previousIndex = deleteIndex - 1;
+
+//   //If it the first movie is to be deleted, then the previous movie is the one after it.
+//   if (deleteIndex === 0){
+//     previousIndex = deleteIndex + 1; 
+//   }
+  
+//   let movieToDelete = movieList[deleteIndex];
+  
+//   const movieBeforeMovieToDelete = movieList[previousIndex];
+
+//   const previousMovie = constructMovie(movieBeforeMovieToDelete);
+
+//   const currentMovieTitle = document.querySelector("#title");
+
+//   if (currentMovieTitle.textContent === movieToDelete.textContent){
+//     renderCard(previousMovie);
+//   }
+
+
+//   movieToDelete.remove();
+//   event.target.remove();
+
+//   serverDelete(currentId);
+// }
+
+
+// function handleSideMenu(event){
+//   renderCard(constructMovie(event.target));
+// }
+
+
+/*************************************************************/
+/* Functions that render the information by DOM manipulation */
+/*************************************************************/
+// function renderCard(movie){
+//   let poster = document.querySelector("#poster");
+//   poster.src = movie.poster;
+//   poster.alt = movie.title;
+
+//   const card = document.querySelector(".card");
+
+//   card.querySelector("#title").textContent      = movie.title;
+//   card.querySelector("#runtime").textContent    = `${movie.runtime}` + " minutes";
+//   card.querySelector("#film-info").textContent  = movie.description;
+//   card.querySelector("#showtime").textContent   = movie.showtime;
+//   card.querySelector("#ticket-num").textContent = `${parseInt(movie.capacity, 10) - parseInt(movie.tickets_sold, 10)}`;
+
+//   const buyTicket = document.querySelector("#buy-ticket");
+
+//   if (movie.capacity !== movie.tickets_sold){
+//     buyTicket.textContent = "Buy Ticket";
+//   } else {
+//     buyTicket.textContent = "Sold Out";
+//   }
+// }
+
+
+// function renderMovieInSideMenu(movie){
+//   const movieTitle = document.createElement("li");
+//   movieTitle.classList.add("film");
+//   movieTitle.classList.add("item");
+//   movieTitle.id = "li" + `${movie.id}`;
+  
+//   //Cache all the data of the movie from the server database in the dataset attribute(data-*) of the new movie list element.
+//   //An alternative way to do this would be to create a single object to hold all the data in the dataset attribute, but for simplicity,
+//   //all the data properties were stored in different variables in the dataset attribute.
+//   movieTitle.dataset.capacity = movie.capacity;
+//   movieTitle.dataset.tickets_sold = movie.tickets_sold;
+//   movieTitle.dataset.id = movie.id;
+//   movieTitle.dataset.runtime = movie.runtime;
+//   movieTitle.dataset.showtime = movie.showtime;
+//   movieTitle.dataset.description = movie.description;
+//   movieTitle.dataset.poster = movie.poster;
+
+
+//   //An event listener to the li element is added here instead of adding it in the addEventListeners section.
+//   movieTitle.addEventListener("click", handleSideMenu);
+
+//   movieTitle.textContent = movie.title;
+
+//   const deleteButton = document.createElement("button");
+//   deleteButton.textContent = "X";
+//   deleteButton.addEventListener("click", handleDeleteMovie);
+//   deleteButton.dataset.id = movie.id;
+
+//   document.querySelector("#films").appendChild(movieTitle);
+//   document.querySelector("#films").appendChild(deleteButton);
 // }

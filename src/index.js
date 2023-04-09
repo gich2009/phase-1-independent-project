@@ -106,7 +106,7 @@ function handleNewBook(library){
                             <input type="number" id="page_count" name="page_count" placeholder="221">
 
                             <label for="last_place">Last Location:</label>
-                            <input type="text" id="last_location" name="last_place" placeholder="Home">
+                            <input type="text" id="last_location" name="last_location" placeholder="Home">
 
                             <label for="bookmarked_page">Bookmarked Page:</label>
                             <input type="number" id="bookmarked_page" name="bookmarked_page" placeholder="1">
@@ -139,7 +139,7 @@ function handleNewBookSubmit(event, library){
     let id   = library.reduce(function (accumulator, book){ if(accumulator < parseInt(book.id)) accumulator = book.id; return accumulator}, 0);
     book["id"] = `${++id}`;
 
-    fetchDateFromWorldTimeAPI().then((date) =>{
+    fetchDateFromWorldTimeAPI(event).then((date) =>{
       book.last_read = `${date}`;
 
       //Only update the local cache once the server has been posted to avoid the local site being ahead of the remote site increasing risk of data loss.
@@ -198,11 +198,8 @@ function handleExistingBook(library){
                             <label for="page_count">Page Count:</label>
                             <input type="number" id="page_count" name="page_count" placeholder="221">
 
-                            <label for="last_read">Date Last Read:</label>
-                            <input type="text" id="last_read" name="last_read">
-
                             <label for="last_place">Last Location:</label>
-                            <input type="text" id="last_location" name="last_place" placeholder="Home">
+                            <input type="text" id="last_location" name="last_location" placeholder="Home">
 
                             <label for="bookmarked_page">Bookmarked Page:</label>
                             <input type="number" id="bookmarked_page" name="bookmarked_page" placeholder="1">
@@ -220,40 +217,69 @@ function handleExistingBook(library){
 
 function handleExistingSubmit(event, library){
   event.preventDefault();
-  const searchId = `${event.target.id.value}`;
+  const formData = new FormData(event.target);
+  const searchId = formData.get("id");
+  console.log(formData.get("last_location"));
 
   try{
     //Validation for the data entered in the form.
-    const idInvalid = isNaN(searchId) || searchId === "" || Number.isInteger(searchId) || parseInt(searchId) < 0
-    const fieldEmpty = event.target.id.value === "" || event.target.title.value === "" || event.target.author.value || event.target.page_count.value === "" ||
-                       event.target.last_location.value === "" || event.target.bookmarked_page.value === "" || event.target.highlights.value ===""
-     if (idInvalid || fieldEmpty)
-         throw("All fields are required, ensure that the properties entered are valid.");
+    const idInvalid = isNaN(searchId) || searchId === "" || Number.isInteger(searchId) || parseInt(searchId) < 0;
+    // const fieldEmpty = event.target.id.value === "" || event.target.title.value === "" || event.target.author.value === "" || event.target.page_count.value === "" ||
+    //                    event.target.last_location.value === "" || event.target.bookmarked_page.value === "" || event.target.highlights.value === "";
+     if (idInvalid)
+         throw("Ensure that you've provided a valid ID that is contained within your library.");
 
     let index = 0;
+    const emptyKeyArray = checkObject(formData);
+    console.log(emptyKeyArray);
 
+    console.log(formData.get("author"));
     for (; index < library.length ; ++index){
       if (library[index]["id"] === searchId){
-        console.log(library[index])
-        library[index] = constructBook(event.target);
-        console.log(library[index])
-        library[index]["id"] = searchId;
-        console.log(library[index]);
-        found = true;
+        for (key of emptyKeyArray){
+          let variable = formData.get([key]);
+          variable = library[index][key];
+        }
+        // console.log(event.target["last_location"].value)
         break;
       }
     }
+    console.log(formData.get("author"));
+    console.log(formData.get("last_location"));
 
 
     //if the record is found, then proceed to process it by patching the server and rendering the updated record.
     if (index !== library.length){
-      const book = constructBook(event.target);
-      console.log(id);
-      book["id"] = `${searchId}`;
-      document.querySelector("#content").innerHTML = "";
-      renderCard(book);
 
-      patchToServer(book);
+      fetchDateFromWorldTimeAPI(formData).then((data) => {
+        const date = data[0];
+        const input = data[1];
+        console.log(input);
+        console.log(input.get("author"));
+        const book = {
+                  title:           input.get("title"),
+                  author:          input.get("author"),
+                  page_count:      input.get("page_count"),
+                  last_location:   input.get("last_location"),
+                  bookmarked_page: input.get("bookmarked_page"),
+                  highlights:      input.get("highlights"),
+                }
+        
+        book.last_read = `${date}`;
+        book["id"] = `${searchId}`;
+
+        patchToServer(book).then((book) => {
+          library[index] = book;
+          console.log(library[index])
+
+          document.querySelector("#content").innerHTML = "";
+          renderCard(book);
+        }
+        )
+
+      })
+    } else {
+      alert ("ID is  not in your library.");
     }
 
   }catch(error){
@@ -262,6 +288,20 @@ function handleExistingSubmit(event, library){
   }finally{
     event.target.reset();
   }
+}
+
+
+function checkObject(formData) {
+  let emptyKeyArray = [];
+
+  if (formData.get("title") === "") emptyKeyArray.push("title");
+  if (formData.get("author") === "") emptyKeyArray.push("author");
+  if (formData.get("page_count")=== "") emptyKeyArray.push("page_count");
+  if (formData.get("last_location") === "") emptyKeyArray.push("last_location");
+  if (formData.get("bookmarked_page") === "") emptyKeyArray.push ("bookmarked_page");
+  if (formData.get("highlights") === "") emptyKeyArray.push ("highlights");
+
+  return emptyKeyArray;
 }
 
 
@@ -309,7 +349,7 @@ function handleSearchSubmit(event, library){
   event.preventDefault();
   
   //Case of search by ID
-  if (event.target.search_by.value === "id" ){
+  if (event.target.search_by.value === "id"){
     try{
       const book = library.find(function(book) {return book.id === event.target.search_query.value});
       if (book === undefined) 
@@ -469,7 +509,7 @@ async function postToServer(book){
 }
 
 
-function patchToServer(book){
+async function patchToServer(book){
   const destinationURL = baseURL + basePath;
   
   fetch(destinationURL + `/${book.id}`, {
@@ -482,32 +522,38 @@ function patchToServer(book){
   .then((response) => response.json())
   .then((book) => {console.log(book);})
   .catch((error) => console.error(error));
+
+  return book;
 }
 
 
 
 //Fetching the date from a public API.
-async function fetchDateFromWorldTimeAPI(){
+async function fetchDateFromWorldTimeAPI(input) {
+  console.log(input);
   const timezone = "Africa/Nairobi";
   const url = `http://worldtimeapi.org/api/timezone/${timezone}`;
 
-  return fetch(url)
-         .then(response => {
-           if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-           }
-           return response.json();
-          })
-         .then(data => {
-           const dateTime = new Date(data.datetime);
-           const date = dateTime.toLocaleDateString(undefined, {timeZone: timezone});
-           console.log(`The current date in ${timezone} is: ${date}`);
-           return date;
-          })
-         .catch(error => {
-           console.error(`Fetch error: ${error}`);
-          });
+  const date = await fetch(url)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      const dateTime = new Date(data.datetime);
+      const date = dateTime.toLocaleDateString(undefined, { timeZone: timezone });
+      console.log(`The current date in ${timezone} is: ${date}`);
+      return date;
+    })
+    .catch((error) => {
+      console.error(`Fetch error: ${error}`);
+    });
+
+  return [date, input];
 }
+
 
 
 // function deleteFromServer(id){
@@ -523,13 +569,13 @@ async function fetchDateFromWorldTimeAPI(){
 /*************************************************************/
 function constructBook(bookEntry){
   const book = {
-    title:           bookEntry.title.value,
-    author:          bookEntry.author.value,
-    page_count:      bookEntry.page_count.value,
+    title:           bookEntry["title"].value,
+    author:          bookEntry["author"].value,
+    page_count:      bookEntry["page_count"].value,
     // last_read:       bookEntry.last_read.value,
-    last_location:   bookEntry.last_location.value,
-    bookmarked_page: bookEntry.bookmarked_page.value,
-    highlights:      bookEntry.highlights.value,
+    last_location:   bookEntry["last_location"].value,
+    bookmarked_page: bookEntry["bookmarked_page"].value,
+    highlights:      bookEntry["highlights"].value,
   }
 
   return book;

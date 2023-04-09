@@ -4,7 +4,7 @@
 
 ## Introduction
 
-Welcome to Kitabu! This interactive application enables users to effortlessly manage their personal library, keeping track of bookmarked pages, highlights, author names, and book titles. Furthermore, Kitabu provides the ability to record the last location a book was read and the date it was last accessed, utilizing the free `public WorldTimeAPI` with fetch and REST. With this user-friendly tool, you can quickly locate and revisit your favorite books, ensuring a delightful reading experience.
+Welcome to Kitabu! This interactive application enables users to effortlessly manage their personal library, keeping track of bookmarked pages, highlights, author names, and book titles. Furthermore, Kitabu provides the ability to record the last location a book was read as well as the date it was last accessed by leveraging the free `public WorldTimeAPI` through the fetch API. With this user-friendly tool, you can quickly locate and revisit your favorite books, ensuring a delightful reading experience.
 
 ## Getting Started
 

@@ -1,0 +1,34 @@
+{
+  "books": [
+    {
+      "id": "1",
+      "title": "Dune",
+      "author": "Frank Herbert",
+      "page_count": "896",
+      "last_read": "2020-04-10",
+      "last_location": "Home",
+      "bookmarked_page": "500",
+      "highlights": ["354: To accept a little death is worse than death itself", "470: Isn't it odd how we misunderstand the hidden unity of kindness and cruelty?"]
+    },
+    {
+      "id": "2",
+      "title": "Surely You're Joking Mr. Feynman",
+      "author": "Richard Feynman",
+      "page_count": "352",
+      "last_read": "2020-05-27",
+       "last_location": "Daniel's place",
+      "bookmarked_page": "130",
+      "highlights": ["100: I learned from her that every woman is worried about her looks, no matter how beautiful she is."]
+    },
+    {
+      "id": "3",
+      "title": "The Holy Bible",
+      "author": "Multiple authors",
+      "page_count": "1200",
+      "last_read": "2022-06-14",
+      "last_location": "St. Andrew's Cathedral",
+      "bookmarked_page": "1100",
+      "highlights": ["Phillipians 4:6: Do not be anxious about anything, but in everything, by prayer and petition, with thanksgiving, present your requests to God."]
+    }
+  ]
+}
